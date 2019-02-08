@@ -103,29 +103,29 @@ set( QWT_SRC
     qwt_curve_fitter.cpp
     qwt_bezier.cpp
     qwt_spline_curve_fitter.cpp
-    qwt_weeding_curve_fitter.cpp
+#    qwt_weeding_curve_fitter.cpp
     qwt_abstract_legend.cpp
     qwt_legend.cpp
     qwt_legend_data.cpp
     qwt_legend_label.cpp
     qwt_plot.cpp
     qwt_plot_renderer.cpp
-    qwt_plot_xml.cpp
+#    qwt_plot_xml.cpp
     qwt_plot_axis.cpp
     qwt_plot_curve.cpp
     qwt_plot_dict.cpp
     qwt_plot_directpainter.cpp
     qwt_plot_grid.cpp
-    qwt_plot_histogram.cpp
+#    qwt_plot_histogram.cpp
     qwt_plot_item.cpp
-    qwt_plot_abstract_barchart.cpp
-    qwt_plot_barchart.cpp
-    qwt_plot_multi_barchart.cpp
+#    qwt_plot_abstract_barchart.cpp
+#    qwt_plot_barchart.cpp
+#    qwt_plot_multi_barchart.cpp
     qwt_plot_intervalcurve.cpp
     qwt_plot_zoneitem.cpp
-    qwt_plot_tradingcurve.cpp
-    qwt_plot_spectrogram.cpp
-    qwt_plot_spectrocurve.cpp
+#    qwt_plot_tradingcurve.cpp
+#    qwt_plot_spectrogram.cpp
+#    qwt_plot_spectrocurve.cpp
     qwt_plot_scaleitem.cpp
     qwt_plot_legenditem.cpp
     qwt_plot_seriesitem.cpp
@@ -153,8 +153,8 @@ set( QWT_SRC
     qwt_color_map.cpp
     qwt_column_symbol.cpp
     qwt_date.cpp
-    qwt_date_scale_draw.cpp
-    qwt_date_scale_engine.cpp
+#    qwt_date_scale_draw.cpp
+#    qwt_date_scale_engine.cpp
     qwt_dyngrid_layout.cpp
     qwt_event_pattern.cpp
     qwt_graphic.cpp
@@ -169,19 +169,20 @@ set( QWT_SRC
     qwt_picker.cpp
     qwt_picker_machine.cpp
     qwt_pixel_matrix.cpp
-    qwt_point_3d.cpp
-    qwt_point_polar.cpp
+#    qwt_point_3d.cpp
+#    qwt_point_polar.cpp
     qwt_round_scale_draw.cpp
     qwt_scale_div.cpp
     qwt_scale_draw.cpp
     qwt_scale_map.cpp
     qwt_scale_engine.cpp
+#    qwt_spline_approximation.cpp
     qwt_spline_basis.cpp
     qwt_spline.cpp
     qwt_spline_parametrization.cpp
     qwt_spline_local.cpp
-    qwt_spline_cubic.cpp
-    qwt_spline_pleasing.cpp
+#    qwt_spline_cubic.cpp
+#    qwt_spline_pleasing.cpp
     qwt_symbol.cpp
     qwt_system_clock.cpp
     qwt_text_engine.cpp
