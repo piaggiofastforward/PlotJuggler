@@ -3,13 +3,14 @@
 
 include_directories( ./  )
 
+add_definitions( -DQWT_MOC_INCLUDE=1)
+
 set( QWT_SRC
     qwt.h
     qwt_abstract_scale_draw.h
     qwt_bezier.h
     qwt_clipper.h
     qwt_color_map.h
-    qwt_compat.h
     qwt_column_symbol.h
     qwt_date.h
     qwt_date_scale_draw.h
@@ -35,7 +36,6 @@ set( QWT_SRC
     qwt_scale_draw.h
     qwt_scale_engine.h
     qwt_scale_map.h
-    qwt_spline_approximation.h
     qwt_spline_basis.h
     qwt_spline.h
     qwt_spline_parametrization.h
@@ -176,7 +176,6 @@ set( QWT_SRC
     qwt_scale_draw.cpp
     qwt_scale_map.cpp
     qwt_scale_engine.cpp
-    qwt_spline_approximation.cpp
     qwt_spline_basis.cpp
     qwt_spline.cpp
     qwt_spline_parametrization.cpp

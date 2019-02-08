@@ -1,9 +1,10 @@
 #include "plotmagnifier.h"
-#include <qwt_plot.h>
 #include <QDebug>
 #include <limits>
 #include <QWheelEvent>
 #include <QApplication>
+#include "qwt_plot.h"
+#include "qwt_scale_map.h"
 
 PlotMagnifier::PlotMagnifier( QWidget *canvas) : QwtPlotMagnifier(canvas)
 {
@@ -32,7 +33,7 @@ void PlotMagnifier::rescale( double factor )
     factor = qAbs( factor );
 
     QwtPlot* plt = plot();
-    if ( plt == NULL || factor == 1.0 ){
+    if ( plt == nullptr || factor == 1.0 ){
         return;
     }
 

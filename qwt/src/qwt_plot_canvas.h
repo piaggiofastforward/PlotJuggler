@@ -12,15 +12,16 @@
 
 #include "qwt_global.h"
 #include "qwt_plot_abstract_canvas.h"
+
 #include <qframe.h>
-#include <qpainterpath.h>
 
 class QwtPlot;
 class QPixmap;
+class QPainterPath;
 
 /*!
   \brief Canvas of a QwtPlot.
-  
+
    Canvas is the widget where all plot items are displayed
 
   \sa QwtPlot::setCanvas(), QwtPlotGLCanvas
@@ -43,8 +44,8 @@ public:
     enum PaintAttribute
     {
         /*!
-          \brief Paint double buffered reusing the content 
-                 of the pixmap buffer when possible. 
+          \brief Paint double buffered reusing the content
+                 of the pixmap buffer when possible.
 
           Using a backing store might improve the performance
           significantly, when working with widget overlays ( like rubber bands ).
@@ -60,15 +61,15 @@ public:
                  of the plot canvas
 
           When using styled backgrounds Qt assumes, that the
-          canvas doesn't fill its area completely 
+          canvas doesn't fill its area completely
           ( f.e because of rounded borders ) and fills the area
           below the canvas. When this is done with gradients it might
           result in a serious performance bottleneck - depending on the size.
 
           When the Opaque attribute is enabled the canvas tries to
-          identify the gaps with some heuristics and to fill those only. 
+          identify the gaps with some heuristics and to fill those only.
 
-          \warning Will not work for semitransparent backgrounds 
+          \warning Will not work for semitransparent backgrounds
          */
         Opaque       = 2,
 
@@ -104,17 +105,20 @@ public:
           OpenGL buffer, that will be translated to a QImage afterwards.
           Then this image will be painted to the canvas.
 
-          This mode might be useful for "heavy" plots to achieve 
-          hardware acceleration on platforms, where the raster paint engine 
+          This mode might be useful for "heavy" plots to achieve
+          hardware acceleration on platforms, where the raster paint engine
           ( = software renderer ) would be used otherwise.
           But the penalty for copying out the buffer to the image makes this mode
           less optimal when looking for high refresh rates of a "lightweight" plot.
 
-          On a hardware accelerated graphics system ( f.e. Qt4/X11 "native" ) 
-          using this mode does not make much sense. Unfortunately those systems have 
-          been removed from Qt5.
+          On platforms, that already run on a hardware accelerated graphics pipeline   
+          this mode does not make much sense. Those platforms might be: 
 
-          \note The OpenGLBuffer mode has no effect, when "QwtOpenGL" has been disabled in 
+              - Qt4: QApplication::setGraphicsSystem( "opengl" ) )
+              - Qt4/X11: ( QApplication::setGraphicsSystem( "native" )
+              - Qt5/X11 ( >= Qt 5.10 ): export QT_XCB_NATIVE_PAINTING=1
+
+          \note The OpenGLBuffer mode has no effect, when "QwtOpenGL" has been disabled in
                 qwtconfig.pri.
 
           \sa QwtPlotOpenGLCanvas, QwtPlotGLCanvas
@@ -134,7 +138,7 @@ public:
     const QPixmap *backingStore() const;
     Q_INVOKABLE void invalidateBackingStore();
 
-    virtual bool event( QEvent * );
+    virtual bool event( QEvent * ) QWT_OVERRIDE;
 
     Q_INVOKABLE QPainterPath borderPath( const QRect & ) const;
 
@@ -142,10 +146,10 @@ public Q_SLOTS:
     void replot();
 
 protected:
-    virtual void paintEvent( QPaintEvent * );
-    virtual void resizeEvent( QResizeEvent * );
+    virtual void paintEvent( QPaintEvent * ) QWT_OVERRIDE;
+    virtual void resizeEvent( QResizeEvent * ) QWT_OVERRIDE;
 
-    virtual void drawBorder( QPainter * );
+    virtual void drawBorder( QPainter * ) QWT_OVERRIDE;
 
 private:
     QImage toImageFBO( const QSize &size );

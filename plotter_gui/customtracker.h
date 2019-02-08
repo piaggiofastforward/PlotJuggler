@@ -6,6 +6,7 @@
 #include <qwt_picker_machine.h>
 #include <qwt_plot_marker.h>
 #include <QEvent>
+#include <QPointF>
 
 class QwtPlotCurve;
 

@@ -4,6 +4,7 @@
 #include <QInputDialog>
 #include <QMouseEvent>
 #include <QFileDialog>
+#include <QPainter>
 #include <QApplication>
 #include "qwt_plot_renderer.h"
 #include "tabbedplotwidget.h"

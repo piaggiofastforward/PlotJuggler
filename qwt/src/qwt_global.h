@@ -24,18 +24,39 @@
 #pragma warning(disable: 4250)
 #endif // _MSC_VER
 
-#ifdef QWT_DLL
+//#ifdef QWT_DLL
 
-#if defined(QWT_MAKEDLL)     // create a Qwt DLL library 
-#define QWT_EXPORT Q_DECL_EXPORT
-#else                        // use a Qwt DLL library
-#define QWT_EXPORT Q_DECL_IMPORT 
-#endif
+//#if defined(QWT_MAKEDLL)     // create a Qwt DLL library
+//#define QWT_EXPORT Q_DECL_EXPORT
+//#else                        // use a Qwt DLL library
+//#define QWT_EXPORT Q_DECL_IMPORT
+//#endif
 
-#endif // QWT_DLL
+//#endif // QWT_DLL
 
 #ifndef QWT_EXPORT
 #define QWT_EXPORT
 #endif
 
-#endif 
+#if QT_VERSION >= 0x040800
+#define QWT_CONSTEXPR Q_DECL_CONSTEXPR
+#endif
+
+#if QT_VERSION >= 0x050000
+#define QWT_OVERRIDE Q_DECL_OVERRIDE
+#define QWT_FINAL Q_DECL_FINAL
+#endif
+
+#ifndef QWT_CONSTEXPR
+#define QWT_CONSTEXPR
+#endif
+
+#ifndef QWT_OVERRIDE
+#define QWT_OVERRIDE
+#endif
+
+#ifndef QWT_FINAL
+#define QWT_FINAL
+#endif
+
+#endif

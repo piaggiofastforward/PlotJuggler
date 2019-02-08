@@ -4,32 +4,37 @@
 #include <QMimeData>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
-#include <qwt_scale_widget.h>
-#include <qwt_plot_canvas.h>
-#include <qwt_scale_engine.h>
-#include <qwt_plot_layout.h>
-#include <qwt_scale_draw.h>
 #include <QAction>
 #include <QMessageBox>
 #include <QMenu>
 #include <QPushButton>
 #include <iostream>
 #include <limits>
-#include "removecurvedialog.h"
-#include "curvecolorpick.h"
 #include <QApplication>
 #include <set>
 #include <memory>
-#include <qwt_text.h>
 #include <QActionGroup>
 #include <QWheelEvent>
 #include <QFileDialog>
 #include <QSettings>
-#include <QtXml/QDomElement>
+#include <QPainter>
+#include <QDomElement>
+#include "qwt_plot.h"
+#include "qwt_plot_canvas.h"
 #include "qwt_plot_renderer.h"
+#include "qwt_plot_layout.h"
+#include "qwt_scale_draw.h"
+#include "qwt_scale_engine.h"
+#include "qwt_scale_widget.h"
+#include "qwt_scale_map.h"
 #include "qwt_series_data.h"
+#include "qwt_plot_zoomer.h"
+#include "qwt_plot_legenditem.h"
+#include "qwt_text.h"
 #include "PlotJuggler/random_color.h"
 #include "point_series_xy.h"
+#include "removecurvedialog.h"
+#include "curvecolorpick.h"
 #include "transforms/custom_function.h"
 #include "transforms/custom_timeseries.h"
 
@@ -308,7 +313,7 @@ void PlotWidget::buildLegend()
     _legend->setBackgroundBrush( c );
 
     _legend->setMaxColumns( 1 );
-    _legend->setAlignment( Qt::Alignment( Qt::AlignTop | Qt::AlignRight ) );
+    _legend->setAlignmentInCanvas( Qt::Alignment( Qt::AlignTop | Qt::AlignRight ) );
     _legend->setBackgroundMode( QwtPlotLegendItem::BackgroundMode::LegendBackground   );
 
     _legend->setBorderRadius( 6 );

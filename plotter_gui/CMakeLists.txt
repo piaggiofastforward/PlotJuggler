@@ -56,9 +56,9 @@ SET( PLOTTER_SRC
 add_executable(PlotJuggler ${PLOTTER_SRC} ${RES_SRC} ${UI_SRC} ${BACKWARD_SRC})
 
 target_link_libraries(PlotJuggler
+    qwt_static
     ${QT_LINK_LIBRARIES}
     colorwidgets
-    qwt_static
     ${BACKWARD_LIBS} )
 
 if(COMPILING_WITH_CATKIN)

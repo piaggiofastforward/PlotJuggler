@@ -12,13 +12,14 @@
 
 #include "qwt_global.h"
 #include "qwt_plot_abstract_canvas.h"
+
 #include <qgl.h>
 
 class QwtPlot;
 
 /*!
   \brief An alternative canvas for a QwtPlot derived from QGLWidget
-  
+
   QwtPlotGLCanvas implements the very basics to act as canvas
   inside of a QwtPlot widget. It might be extended to a full
   featured alternative to QwtPlotCanvas in a future version of Qwt.
@@ -30,14 +31,14 @@ class QwtPlot;
   \sa QwtPlot::setCanvas(), QwtPlotCanvas, QwtPlotCanvas::OpenGLBuffer
 
   \note With Qt4 you might want to use the QPaintEngine::OpenGL paint engine
-        ( see QGL::setPreferredPaintEngine() ). On a Linux test system 
+        ( see QGL::setPreferredPaintEngine() ). On a Linux test system
         QPaintEngine::OpenGL2 shows very basic problems like translated
         geometries.
 
   \note Another way for getting hardware accelerated graphics is using
         an OpenGL offscreen buffer ( QwtPlotCanvas::OpenGLBuffer ) with QwtPlotCanvas.
         Performance is worse, than rendering straight to a QGLWidget, but is usually
-        better integrated into a desktop application. 
+        better integrated into a desktop application.
 */
 class QWT_EXPORT QwtPlotGLCanvas: public QGLWidget, public QwtPlotAbstractGLCanvas
 {
@@ -57,23 +58,23 @@ public:
     explicit QwtPlotGLCanvas( const QGLFormat &, QwtPlot * = NULL );
     virtual ~QwtPlotGLCanvas();
 
-    Q_INVOKABLE virtual void invalidateBackingStore();
+    Q_INVOKABLE virtual void invalidateBackingStore() QWT_OVERRIDE;
     Q_INVOKABLE QPainterPath borderPath( const QRect & ) const;
 
-    virtual bool event( QEvent * );
+    virtual bool event( QEvent * ) QWT_OVERRIDE;
 
 public Q_SLOTS:
     void replot();
 
 protected:
-    virtual void paintEvent( QPaintEvent * );
+    virtual void paintEvent( QPaintEvent * ) QWT_OVERRIDE;
 
-    virtual void initializeGL();
-    virtual void paintGL();
-    virtual void resizeGL( int width, int height );
+    virtual void initializeGL() QWT_OVERRIDE;
+    virtual void paintGL() QWT_OVERRIDE;
+    virtual void resizeGL( int width, int height ) QWT_OVERRIDE;
 
 private:
-	virtual void clearBackingStore();
+	virtual void clearBackingStore() QWT_OVERRIDE;
 
     class PrivateData;
     PrivateData *d_data;

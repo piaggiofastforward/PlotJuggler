@@ -6,6 +6,7 @@
 #include <QDesktopWidget>
 #include <QFontDatabase>
 #include <QSettings>
+#include <QPainter>
 
 QString getFunnySubtitle(){
 

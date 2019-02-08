@@ -8,7 +8,7 @@
  *****************************************************************************/
 
 #include "qwt_series_data.h"
-#include "qwt_math.h"
+#include "qwt_point_polar.h"
 
 static inline QRectF qwtBoundingRect( const QPointF &sample )
 {
@@ -40,6 +40,7 @@ static inline QRectF qwtBoundingRect( const QwtSetSample &sample )
     {
         if ( sample.set[i] < minY )
             minY = sample.set[i];
+
         if ( sample.set[i] > maxY )
             maxY = sample.set[i];
     }
@@ -54,6 +55,18 @@ static inline QRectF qwtBoundingRect( const QwtOHLCSample &sample )
 {
     const QwtInterval interval = sample.boundingInterval();
     return QRectF( interval.minValue(), sample.time, interval.width(), 0.0 );
+}
+
+static inline QRectF qwtBoundingRect( const QwtVectorSample &sample )
+{
+    /*
+        When displaying a sample as an arrow its length will be
+        proportional to the magnitude - but not the same.
+        As the factor between length and magnitude is not known
+        we can't include vx/vy into the bounding rectangle.
+     */
+
+    return QRectF( sample.x, sample.y, 0, 0 );
 }
 
 /*!
@@ -216,6 +229,23 @@ QRectF qwtBoundingRect(
 }
 
 /*!
+  \brief Calculate the bounding rectangle of a series subset
+
+  Slow implementation, that iterates over the series.
+
+  \param series Series
+  \param from Index of the first sample, <= 0 means from the beginning
+  \param to Index of the last sample, < 0 means to the end
+
+  \return Bounding rectangle
+*/
+QRectF qwtBoundingRect(
+    const QwtSeriesData<QwtVectorSample> &series, int from, int to )
+{
+    return qwtBoundingRectT<QwtVectorSample>( series, from, to );
+}
+
+/*!
    Constructor
    \param samples Samples
 */
@@ -297,9 +327,10 @@ QRectF QwtIntervalSeriesData::boundingRect() const
    Constructor
    \param samples Samples
 */
-QwtSetSeriesData::QwtSetSeriesData(
-        const QVector<QwtSetSample> &samples ):
-    QwtArraySeriesData<QwtSetSample>( samples )
+QwtVectorFieldData::QwtVectorFieldData(
+        const QVector<QwtVectorSample> &samples ):
+    QwtArraySeriesData<QwtVectorSample>( samples ),
+    d_maxMagnitude( -1.0 )
 {
 }
 
@@ -311,6 +342,41 @@ QwtSetSeriesData::QwtSetSeriesData(
 
   \return Bounding rectangle
 */
+QRectF QwtVectorFieldData::boundingRect() const
+{
+    if ( d_boundingRect.width() < 0.0 )
+        d_boundingRect = qwtBoundingRect( *this );
+
+    return d_boundingRect;
+}
+
+double QwtVectorFieldData::maxMagnitude() const
+{
+    if ( d_maxMagnitude < 0.0 )
+    {
+        double max = 0.0;
+
+        for ( uint i = 0; i < size(); i++ )
+        {
+            const QwtVectorSample s = sample( i );
+
+            const double l = s.vx * s.vx + s.vy * s.vy;
+            if ( l > max )
+                max = l;
+        }
+
+        d_maxMagnitude = std::sqrt( max );
+    }
+
+    return d_maxMagnitude;
+}
+
+QwtSetSeriesData::QwtSetSeriesData(
+        const QVector<QwtSetSample> &samples ):
+    QwtArraySeriesData<QwtSetSample>( samples )
+{
+}
+
 QRectF QwtSetSeriesData::boundingRect() const
 {
     if ( d_boundingRect.width() < 0.0 )

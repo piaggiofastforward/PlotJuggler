@@ -9,7 +9,6 @@
 
 #include "qwt_plot_canvas.h"
 #include "qwt_painter.h"
-#include "qwt_math.h"
 #include "qwt_plot.h"
 
 #ifndef QWT_NO_OPENGL
@@ -46,9 +45,6 @@ typedef QGLWidget QwtPlotCanvasSurfaceGL;
 #endif // !QWT_NO_OPENGL
 
 #include <qpainter.h>
-#include <qstyle.h>
-#include <qstyleoption.h>
-#include <qpaintengine.h>
 #include <qevent.h>
 
 class QwtPlotCanvas::PrivateData
@@ -81,7 +77,7 @@ public:
     QPixmap *backingStore;
 };
 
-/*! 
+/*!
   \brief Constructor
 
   \param plot Parent plot widget
@@ -136,7 +132,7 @@ void QwtPlotCanvas::setPaintAttribute( PaintAttribute attribute, bool on )
 #if QT_VERSION >= 0x050000
                     *d_data->backingStore = grab( rect() );
 #else
-                    *d_data->backingStore = 
+                    *d_data->backingStore =
                         QPixmap::grabWidget( this, rect() );
 #endif
                 }
@@ -195,19 +191,19 @@ void QwtPlotCanvas::invalidateBackingStore()
 */
 bool QwtPlotCanvas::event( QEvent *event )
 {
-    if ( event->type() == QEvent::PolishRequest ) 
+    if ( event->type() == QEvent::PolishRequest )
     {
         if ( testPaintAttribute( QwtPlotCanvas::Opaque ) )
         {
-            // Setting a style sheet changes the 
+            // Setting a style sheet changes the
             // Qt::WA_OpaquePaintEvent attribute, but we insist
             // on painting the background.
-            
+
             setAttribute( Qt::WA_OpaquePaintEvent, true );
         }
     }
 
-    if ( event->type() == QEvent::PolishRequest || 
+    if ( event->type() == QEvent::PolishRequest ||
         event->type() == QEvent::StyleChange )
     {
         updateStyleSheetInfo();
@@ -229,7 +225,7 @@ void QwtPlotCanvas::paintEvent( QPaintEvent *event )
         d_data->backingStore != NULL )
     {
         QPixmap &bs = *d_data->backingStore;
-        if ( bs.size() != size() )
+        if ( bs.size() != size() * QwtPainter::devicePixelRatio( &bs ) )
         {
             bs = QwtPainter::backingStore( this, size() );
 
@@ -319,7 +315,7 @@ void QwtPlotCanvas::paintEvent( QPaintEvent *event )
 
             drawCanvas( &painter );
 
-            if ( frameWidth() > 0 ) 
+            if ( frameWidth() > 0 )
                 drawBorder( &painter );
         }
     }
@@ -389,7 +385,7 @@ QPainterPath QwtPlotCanvas::borderPath( const QRect &rect ) const
 
 #define FIX_GL_TRANSLATION 0
 
-QImage QwtPlotCanvas::toImageFBO( const QSize &size ) 
+QImage QwtPlotCanvas::toImageFBO( const QSize &size )
 {
     const int numSamples = 4;
 
@@ -444,10 +440,10 @@ QImage QwtPlotCanvas::toImageFBO( const QSize &size )
         drawStyled( &painter, testPaintAttribute( HackStyledBackground ) );
     else
         drawUnstyled( &painter );
-    
+
     if ( frameWidth() > 0 )
         drawBorder( &painter );
-    
+
     painter.end();
 
     QImage image = fbo.toImage();
@@ -466,4 +462,8 @@ QImage QwtPlotCanvas::toImageFBO( const QSize &)
     return QImage();
 }
 
+#endif
+
+#if QWT_MOC_INCLUDE
+#include "moc_qwt_plot_canvas.cpp"
 #endif
