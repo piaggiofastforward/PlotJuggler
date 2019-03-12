@@ -46,13 +46,13 @@ Watch this video to learn how to use it.
 
 ## Windows Installer (experimental)
 
-[PlotJugglerInstaller-2.1.5.exe](http://bit.ly/2BQqNsw)
+[PlotJugglerInstaller-2.1.5.exe](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.5/PlotJugglerInstaller-2.1.5.exe)
 
 ## "Download and Run" (Ubuntu 16.04 Xenial or later)
 
 For those of you that can't wait to get your hands dirty, just download this AppImage:
 
-[PlotJuggler-2.1.5-x86_64.AppImage](http://bit.ly/2GYItp8).
+[PlotJuggler-2.1.5-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/2.1.5/PlotJuggler-2.1.5-x86_64.AppImage).
    
 Do not forget to make it executable with the command 
 
