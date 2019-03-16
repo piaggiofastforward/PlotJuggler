@@ -458,18 +458,20 @@ void PlotWidget::dragEnterEvent(QDragEnterEvent *event)
 
     const QMimeData *mimeData = event->mimeData();
     QStringList mimeFormats = mimeData->formats();
+    _dragging.curves.clear();
+    _dragging.source = event->source();
     for(const QString& format: mimeFormats)
     {
         QByteArray encoded = mimeData->data( format );
         QDataStream stream(&encoded, QIODevice::ReadOnly);
-        _dragging.curves.clear();
-        _dragging.source = event->source();
 
         while (!stream.atEnd())
         {
             QString curve_name;
             stream >> curve_name;
-            _dragging.curves.push_back( curve_name );
+            if(!curve_name.isEmpty()) {
+                _dragging.curves.push_back(curve_name);
+            }
         }
 
         if( format.contains( "curveslist/add_curve") )
