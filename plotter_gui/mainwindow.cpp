@@ -26,6 +26,8 @@
 #include <QWindow>
 #include <QElapsedTimer>
 #include <QHeaderView>
+#include <TinyMAT/tinymatwriter.h>
+#include <regex>
 
 
 #include "mainwindow.h"
@@ -417,6 +419,7 @@ void MainWindow::createActions()
 
     //---------------------------------------------
 
+    connect(ui->actionSave_as_matlab, &QAction::triggered,     this, &MainWindow::onActionSave_as_matlab );
     connect(ui->actionSaveLayout, &QAction::triggered,         this, &MainWindow::onActionSaveLayout );
     connect(ui->actionLoadLayout, &QAction::triggered,         this, &MainWindow::onActionLoadLayout );
     connect(ui->actionLoadData, &QAction::triggered,           this, &MainWindow::onActionLoadDataFile );
@@ -825,6 +828,90 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
         ui->pushButtonRemoveTimeOffset->setChecked(remove_offset);
     }
     return true;
+}
+
+void MainWindow::onActionSave_as_matlab()
+{
+    QFileDialog saveDialog;
+    saveDialog.setOption(QFileDialog::DontUseNativeDialog, true);
+
+    /*
+    QGridLayout *save_layout = static_cast<QGridLayout*>(saveDialog.layout());
+
+    QFrame* frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box | QFrame::Plain);
+    frame->setLineWidth(1);
+
+    QVBoxLayout *vbox = new QVBoxLayout;
+    QLabel* title = new QLabel("Save Layout options");
+    QFrame* separator = new QFrame;
+    separator->setFrameStyle(QFrame::HLine | QFrame::Plain);
+
+    auto checkbox_datasource = new QCheckBox("Save data source");
+    checkbox_datasource->setToolTip("Do you want the layout to remember the source of your data,\n"
+                                    "i.e. the Datafile used or the Streaming Plugin loaded ?");
+    checkbox_datasource->setFocusPolicy( Qt::NoFocus );
+    checkbox_datasource->setChecked( settings.value("MainWindow.saveLayoutDataSource", true).toBool() );
+
+    auto checkbox_snippets = new QCheckBox("Save custom transformations");
+    checkbox_snippets->setToolTip("Do you want the layout to save the custom transformations?");
+    checkbox_snippets->setFocusPolicy( Qt::NoFocus );
+    checkbox_snippets->setChecked( settings.value("MainWindow.saveLayoutSnippets", true).toBool() );
+
+    vbox->addWidget(title);
+    vbox->addWidget(separator);
+    vbox->addWidget(checkbox_datasource);
+    vbox->addWidget(checkbox_snippets);
+    frame->setLayout(vbox);
+
+    int rows = save_layout->rowCount();
+    int col = save_layout->columnCount();
+    save_layout->addWidget(frame, 0, col, rows, 1, Qt::AlignTop);
+    */
+
+    QString directory_path = QDir::currentPath();
+
+    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+    saveDialog.setDefaultSuffix("mat");
+    saveDialog.setNameFilter("MATLAB (*.mat)");
+    saveDialog.setDirectory(directory_path);
+    saveDialog.exec();
+
+
+    if(saveDialog.result() != QDialog::Accepted || saveDialog.selectedFiles().empty())
+    {
+        return;
+    }
+
+    QString fileName = saveDialog.selectedFiles().first();
+
+    if (fileName.isEmpty()){
+        return;
+    }
+
+    auto *matFile = TinyMATWriter_open(fileName.toUtf8());
+    for(auto &plot : _mapped_plot_data.numeric) {
+        PlotData &plotData = plot.second;
+        double   *mat2n    = new double[2 * plot.second.size()];
+        int      idx       = 0;
+        for(auto p : plot.second) {
+            mat2n[idx++] = p.x;
+            mat2n[idx++] = p.y;
+        }
+        int32_t  matSize[2];
+        matSize[0] = 2;
+        matSize[1] = plot.second.size();
+        std::regex regex ("\\b_(.+)");
+        std::string var_name = std::regex_replace(plot.first, regex, "tmp_$1", std::regex_constants::match_any);
+        //std::regex regex2 ("(.*)/(.*)");
+        std::regex regex2 ("/");
+        std::string var_name2 = std::regex_replace(var_name, regex2, "_slash_", std::regex_constants::match_any);
+        std::regex regex3 ("\\.");
+        std::string var_name3 = std::regex_replace(var_name2, regex3, "_dot_", std::regex_constants::match_any);
+        qDebug() << plot.first.c_str() << " " << var_name3.c_str();
+        TinyMATWriter_writeMatrixND_rowmajor(matFile, var_name3.c_str(), mat2n, matSize, 2);
+    }
+    TinyMATWriter_close(matFile);
 }
 
 void MainWindow::onActionSaveLayout()

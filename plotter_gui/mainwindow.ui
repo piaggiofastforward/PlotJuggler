@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1000</width>
-    <height>800</height>
+    <width>1038</width>
+    <height>798</height>
    </rect>
   </property>
   <property name="focusPolicy">
@@ -595,7 +595,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1000</width>
+     <width>1038</width>
      <height>25</height>
     </rect>
    </property>
@@ -632,6 +632,7 @@
     <addaction name="actionLoadLayout"/>
     <addaction name="actionLoadRecentLayout"/>
     <addaction name="actionSaveLayout"/>
+    <addaction name="actionSave_as_matlab"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -791,6 +792,11 @@
   <action name="actionSupportPlotJuggler">
    <property name="text">
     <string>Support PlotJuggler</string>
+   </property>
+  </action>
+  <action name="actionSave_as_matlab">
+   <property name="text">
+    <string>Save as matlab</string>
    </property>
   </action>
  </widget>

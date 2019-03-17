@@ -53,6 +53,8 @@ private slots:
 
     void onActionSaveLayout();
 
+    void onActionSave_as_matlab();
+
     void onActionLoadLayout(bool reload_previous = false);
 
     void onActionLoadLayoutFromFile(QString filename);
