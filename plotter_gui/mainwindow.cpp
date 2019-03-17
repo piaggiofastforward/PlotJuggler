@@ -26,6 +26,8 @@
 #include <QWindow>
 #include <QElapsedTimer>
 #include <QHeaderView>
+#include <TinyMAT/tinymatwriter.h>
+#include <regex>
 
 
 #include "mainwindow.h"
@@ -417,6 +419,7 @@ void MainWindow::createActions()
 
     //---------------------------------------------
 
+    connect(ui->actionSave_as_matlab, &QAction::triggered,     this, &MainWindow::onActionSave_as_matlab );
     connect(ui->actionSaveLayout, &QAction::triggered,         this, &MainWindow::onActionSaveLayout );
     connect(ui->actionLoadLayout, &QAction::triggered,         this, &MainWindow::onActionLoadLayout );
     connect(ui->actionLoadData, &QAction::triggered,           this, &MainWindow::onActionLoadDataFile );
@@ -745,6 +748,12 @@ void MainWindow::checkAllCurvesFromLayout(const QDomElement& root)
     }
     if( missing_curves.size() > 0 )
     {
+        // langrind: the emptyPlaceholders attribute in the XML layout file allows us to
+        // start PlotJuggler and have it begin displaying a streaming graph immediately.
+        // I can think of a few other ways to do this, and none of them seem perfect, so
+        // going with this one for now
+        QDomElement empty_placeholders =  root.firstChildElement( "emptyPlaceholders" );
+
         QMessageBox msgBox(this);
         msgBox.setWindowTitle("Warning");
         msgBox.setText(tr("One or more timeseries in the layout haven't been loaded yet\n"
@@ -753,8 +762,13 @@ void MainWindow::checkAllCurvesFromLayout(const QDomElement& root)
         QPushButton* buttonRemove = msgBox.addButton(tr("Remove curves from plots"), QMessageBox::RejectRole);
         QPushButton* buttonPlaceholder = msgBox.addButton(tr("Create empty placeholders"), QMessageBox::YesRole);
         msgBox.setDefaultButton(buttonPlaceholder);
-        msgBox.exec();
-        if( msgBox.clickedButton() == buttonPlaceholder )
+        if( empty_placeholders.isNull() )
+        {
+            // Layout file didn't specify, so ask the user
+            msgBox.exec();
+        }
+
+        if( msgBox.clickedButton() == buttonPlaceholder || !empty_placeholders.isNull() )
         {
             for(auto& name: missing_curves )
             {
@@ -825,6 +839,94 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
         ui->pushButtonRemoveTimeOffset->setChecked(remove_offset);
     }
     return true;
+}
+
+void MainWindow::onActionSave_as_matlab()
+{
+    QFileDialog saveDialog;
+    saveDialog.setOption(QFileDialog::DontUseNativeDialog, true);
+
+    /*
+    QGridLayout *save_layout = static_cast<QGridLayout*>(saveDialog.layout());
+
+    QFrame* frame = new QFrame;
+    frame->setFrameStyle(QFrame::Box | QFrame::Plain);
+    frame->setLineWidth(1);
+
+    QVBoxLayout *vbox = new QVBoxLayout;
+    QLabel* title = new QLabel("Save Layout options");
+    QFrame* separator = new QFrame;
+    separator->setFrameStyle(QFrame::HLine | QFrame::Plain);
+
+    auto checkbox_datasource = new QCheckBox("Save data source");
+    checkbox_datasource->setToolTip("Do you want the layout to remember the source of your data,\n"
+                                    "i.e. the Datafile used or the Streaming Plugin loaded ?");
+    checkbox_datasource->setFocusPolicy( Qt::NoFocus );
+    checkbox_datasource->setChecked( settings.value("MainWindow.saveLayoutDataSource", true).toBool() );
+
+    auto checkbox_snippets = new QCheckBox("Save custom transformations");
+    checkbox_snippets->setToolTip("Do you want the layout to save the custom transformations?");
+    checkbox_snippets->setFocusPolicy( Qt::NoFocus );
+    checkbox_snippets->setChecked( settings.value("MainWindow.saveLayoutSnippets", true).toBool() );
+
+    vbox->addWidget(title);
+    vbox->addWidget(separator);
+    vbox->addWidget(checkbox_datasource);
+    vbox->addWidget(checkbox_snippets);
+    frame->setLayout(vbox);
+
+    int rows = save_layout->rowCount();
+    int col = save_layout->columnCount();
+    save_layout->addWidget(frame, 0, col, rows, 1, Qt::AlignTop);
+    */
+
+    QString directory_path = QDir::currentPath();
+
+    saveDialog.setAcceptMode(QFileDialog::AcceptSave);
+    saveDialog.setDefaultSuffix("mat");
+    saveDialog.setNameFilter("MATLAB (*.mat)");
+    saveDialog.setDirectory(directory_path);
+    saveDialog.exec();
+
+
+    if(saveDialog.result() != QDialog::Accepted || saveDialog.selectedFiles().empty())
+    {
+        return;
+    }
+
+    QString fileName = saveDialog.selectedFiles().first();
+
+    if (fileName.isEmpty()){
+        return;
+    }
+
+    auto *matFile = TinyMATWriter_open(fileName.toUtf8());
+    for(auto &plot : _mapped_plot_data.numeric) {
+        PlotData &plotData = plot.second;
+        double   *mat2n    = new double[2 * plot.second.size()];
+        int      idx       = 0;
+        for(auto p : plot.second) {
+            mat2n[idx++] = p.x;
+            mat2n[idx++] = p.y;
+        }
+        int32_t  matSize[2];
+        matSize[0] = 2;
+        matSize[1] = plot.second.size();
+        std::regex regex ("\\b_(.+)");
+        std::string var_name = std::regex_replace(plot.first, regex, "tmp_$1", std::regex_constants::match_any);
+        //std::regex regex2 ("(.*)/(.*)");
+        std::regex regex2 ("/");
+        std::string var_name2 = std::regex_replace(var_name, regex2, "_slash_", std::regex_constants::match_any);
+        std::regex regex3 ("\\.");
+        std::string var_name3 = std::regex_replace(var_name2, regex3, "_dot_", std::regex_constants::match_any);
+        std::regex regex4 ("\\[+-*]+");
+        std::string var_name4 = std::regex_replace(var_name3, regex4, "_star_", std::regex_constants::match_any);
+        std::regex regex5 ("\\s+");
+        std::string var_name5 = std::regex_replace(var_name4, regex5, "_blank_", std::regex_constants::match_any);
+        qDebug() << plot.first.c_str() << " " << var_name5.c_str();
+        TinyMATWriter_writeMatrixND_rowmajor(matFile, var_name5.c_str(), mat2n, matSize, 2);
+    }
+    TinyMATWriter_close(matFile);
 }
 
 void MainWindow::onActionSaveLayout()
@@ -1599,6 +1701,7 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename)
     if( previously_loaded_streamer.isNull() == false)
     {
         QString streamer_name = previously_loaded_streamer.attribute("name");
+        QString streamer_autostart = previously_loaded_streamer.attribute("autostart");
 
         QMessageBox msgBox(this);
         msgBox.setWindowTitle("Start Streaming?");
@@ -1606,8 +1709,14 @@ void MainWindow::onActionLoadLayoutFromFile(QString filename)
         msgBox.addButton(tr("No (Layout only)"), QMessageBox::RejectRole);
         QPushButton* buttonBoth = msgBox.addButton(tr("Yes (Both Layout and Streaming)"), QMessageBox::YesRole);
         msgBox.setDefaultButton(buttonBoth);
-        msgBox.exec();
-        if( msgBox.clickedButton() == buttonBoth )
+
+        // langrind:  <previouslyLoadedStreamer name="DataStreamer_JSON" autostart="true" />
+        // So user can start PlogJuggler streaming from a shell script with no dialog box interaction
+        if( streamer_autostart.isNull() || streamer_autostart != "true" )
+        {
+            msgBox.exec();
+        }
+        if( msgBox.clickedButton() == buttonBoth || streamer_autostart.isNull() == false )
         {
             if( _data_streamer.count(streamer_name) != 0 )
             {
