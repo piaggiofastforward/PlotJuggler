@@ -28,9 +28,9 @@ SET( SRC
     ../../include/PlotJuggler/datastreamer_base.h
     )
 
-link_directories(${ZMQ_DIR}/install/x86_64/lib  ${PFFPMC_DIR}/src/utils/pff_mq/x86_64/build/x86_64/lib)
+link_directories(${ZMQ_DIR}/install/x86_64/lib)
 
 add_library(DataStreamZMQ SHARED ${SRC} ${UI_SRC}  )
 #target_link_libraries(DataStreamZMQ  ${Qt5Widgets_LIBRARIES} Qt5::WebSockets Qt5::Xml)
-target_link_libraries(DataStreamZMQ  ${Qt5Widgets_LIBRARIES} Qt5::Xml pffmq zmq pthread)
+target_link_libraries(DataStreamZMQ  ${Qt5Widgets_LIBRARIES} Qt5::Xml zmq pthread)
 
