@@ -16,8 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <thread>
 #include "PlotJuggler/datastreamer_base.h"
 
-#include "pff_mq/mq_publisher.h"
-#include "pff_mq/mq_subscriber.h"
+#include "zmq.h"
 
 #include <nlohmann/json.hpp>
 

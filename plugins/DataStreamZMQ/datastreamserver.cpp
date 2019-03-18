@@ -13,6 +13,7 @@
 #include <QInputDialog>
 #include <functional>
 #include <chrono>
+#include <iostream>
 
 DataStreamServer::DataStreamServer() :
         _running(false)
@@ -27,7 +28,7 @@ DataStreamServer::~DataStreamServer()
 
 void DataStreamServer::getOD()
 {
-    std::string endpoint = "tcp://" + _server_ip + ":" + to_string(_port + 1);
+    std::string endpoint = "tcp://" + _server_ip + ":" + std::to_string(_port + 1);
     qDebug() << "Looking for OD at " << endpoint.c_str();
     void *od_socket = zmq_socket(_zmq_ctx, ZMQ_REQ);
     int rc = zmq_connect(od_socket, endpoint.c_str());
@@ -83,7 +84,7 @@ bool DataStreamServer::start()
                                                "192.168.1.4", &ok);
             if (ok) {
                 _server_ip = std::string(ip.toUtf8().constData());
-                std::string endpoint = "tcp://" + _server_ip + ":" + to_string(_port);
+                std::string endpoint = "tcp://" + _server_ip + ":" + std::to_string(_port);
                 qDebug() << "ZMQ listening on " << endpoint.c_str();
                 _socket = zmq_socket(_zmq_ctx, ZMQ_SUB);
                 zmq_connect(_socket, endpoint.c_str());
