@@ -16,17 +16,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <thread>
 #include "PlotJuggler/datastreamer_base.h"
 
-#include "pff_msgs/navigation.h"
-#include "pff_msgs/motor_state.h"
-#include "pff_msgs/motor_limits.h"
-#include "pff_msgs/motor_command.h"
 #include "pff_mq/mq_publisher.h"
 #include "pff_mq/mq_subscriber.h"
 
 #include <nlohmann/json.hpp>
-
-//#include <tao/json.hpp>
-//#include <tao/json/contrib/traits.hpp>
 
 class DataStreamServer : public DataStreamer {
 Q_OBJECT

@@ -140,6 +140,12 @@ void DataStreamServer::Listener()
         if(rc > 0) {
             int msgSize = zmq_msg_size(&part);
             uint8_t*ptr = (uint8_t *) zmq_msg_data(&part);
+            //get timestamp
+            int64_t  timeStamp;
+            memcpy(&timeStamp, ptr, sizeof(timeStamp));
+            ptr += sizeof(timeStamp);
+            msgSize -= sizeof(timeStamp);
+            const double t = timeStamp * 0.000000001;
             while(msgSize >= 2+8) {
                 //received message first 2 bytes is index
                 //next 8 bytes is double value
@@ -151,8 +157,8 @@ void DataStreamServer::Listener()
                 memcpy(&varData, ptr, 8);
                 ptr += 8;
 
-                auto now =  high_resolution_clock::now();
-                const double t = duration_cast< duration<double>>( now - initial_time ).count() ;
+                //auto now =  high_resolution_clock::now();
+                //const double t = duration_cast< duration<double>>( now - initial_time ).count() ;
 
                 std::lock_guard<std::mutex> lock( mutex() );
 
