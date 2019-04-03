@@ -2,26 +2,27 @@
 #define DragableWidget_H
 
 #include <map>
+#include <deque>
 #include <QObject>
 #include <QTextEdit>
-#include <qwt_plot.h>
-#include <qwt_plot_curve.h>
-#include <qwt_plot_grid.h>
-#include <qwt_symbol.h>
-#include <qwt_legend.h>
-#include <deque>
+#include <QDomDocument>
 #include <QMessageBox>
 #include <QTime>
 #include "plotmagnifier.h"
 #include "plotzoomer.h"
-#include <qwt_plot_panner.h>
-#include <QDomDocument>
+#include "qwt_plot.h"
+#include "qwt_plot_curve.h"
+#include "qwt_plot_grid.h"
+#include "qwt_symbol.h"
+#include "qwt_legend.h"
+#include "qwt_plot_rescaler.h"
+#include "qwt_plot_panner.h"
+#include "qwt_plot_legenditem.h"
 #include "timeseries_qwt.h"
 #include "customtracker.h"
 #include "axis_limits_dialog.h"
 #include "transforms/transform_selector.h"
 #include "transforms/custom_function.h"
-#include <qwt_plot_legenditem.h>
 
 class PlotWidget : public QwtPlot
 {
@@ -41,11 +42,9 @@ public:
 
     bool xmlLoadState(QDomElement &element);
 
-    QRectF currentBoundingRect() const;
-
     PlotData::RangeTime getMaximumRangeX() const;
 
-    PlotData::RangeValue getMaximumRangeY( PlotData::RangeTime range_X, bool absolute_time ) const;
+    PlotData::RangeValue getMaximumRangeY(PlotData::RangeTime range_X) const;
 
     void setZoomRectangle( QRectF rect, bool emit_signal );
 
@@ -67,11 +66,21 @@ public:
 
     bool isZoomEnabled() const;
 
+    QRectF canvasBoundingRect() const;
+
+    virtual void resizeEvent( QResizeEvent *ev ) override;
+
+    virtual void updateLayout() override;
+
+    void setConstantRatioXY(bool active);
+
 protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
     void dragLeaveEvent(QDragLeaveEvent *event) override;
+
+    bool canvasEventFilter(QEvent *event);
 
 signals:
     void swapWidgetsRequested(PlotWidget* source, PlotWidget* destination);
@@ -111,6 +120,8 @@ public slots:
     void setTrackerPosition(double abs_time);
 
     void on_changeTimeOffset(double offset);
+
+    void on_changeDateTimeScale(bool enable);
 
 private slots:
 
@@ -166,6 +177,8 @@ private:
     QwtPlotLegendItem* _legend;
     QwtPlotGrid* _grid;
 
+    bool _use_date_time_scale;
+
     PlotDataMapRef& _mapped_data;
     QString _default_transform;
     std::map<std::string, QString> _curves_transform;
@@ -206,7 +219,13 @@ private:
 
     bool _zoom_enabled;
 
+    bool _keep_aspect_ratio;
+
+    QRectF _max_zoom_rect;
+
     void transformCustomCurves();
+    void updateMaximumZoomArea();
+    void rescaleEqualAxisScaling();
 };
 
 #endif

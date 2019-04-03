@@ -111,6 +111,8 @@ private slots:
 
     void on_pushButtonActivateGrid_toggled(bool checked);
 
+    void on_pushButtonRatio_toggled(bool checked);
+
     void on_pushButtonPlay_toggled(bool checked);
 
     void on_actionClearBuffer_triggered();
@@ -236,6 +238,8 @@ protected:
     QTimer *_replot_timer;
 
     QTimer *_publish_timer;
+
+    QDateTime _prev_publish_time;
 
 signals:
     void requestRemoveCurveByName(const std::string& name);

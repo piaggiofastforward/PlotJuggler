@@ -8,7 +8,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -fPIC -std=c++14")
 QT5_WRAP_UI ( UI_SRC
     aboutdialog.ui
     axis_limits_dialog.ui
-    cheatsheet_dialog.ui
     mainwindow.ui
     removecurvedialog.ui
     curvecolorpick.ui
@@ -45,6 +44,8 @@ SET( PLOTTER_SRC
     transforms/custom_timeseries.cpp
     transforms/function_editor.cpp
     transforms/transform_selector.cpp
+
+    cheatsheet/video_cheatsheet.cpp
 
     utils.cpp
 

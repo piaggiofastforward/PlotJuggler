@@ -1,10 +1,10 @@
 #include <qlayout.h>
 #include <qpen.h>
-#include <qwt_plot.h>
-#include <qwt_plot_canvas.h>
-#include <qwt_scale_widget.h>
-#include <qwt_scale_draw.h>
 #include <QSettings>
+#include "qwt_plot.h"
+#include "qwt_plot_canvas.h"
+#include "qwt_scale_widget.h"
+#include "qwt_scale_draw.h"
 #include "plotmatrix.h"
 #include "customtracker.h"
 
@@ -399,7 +399,7 @@ void PlotMatrix::on_singlePlotScaleChanged(PlotWidget *modified_plot, QRectF new
                     modified_plot != plot &&
                     plot->isXYPlot() == false)
             {
-                QRectF bound_act = plot->currentBoundingRect();
+                QRectF bound_act = plot->canvasBoundingRect();
                 bound_act.setLeft( new_range.left() );
                 bound_act.setRight( new_range.right() );
                 plot->setZoomRectangle( bound_act, false );
