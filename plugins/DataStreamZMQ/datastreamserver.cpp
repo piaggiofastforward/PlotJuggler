@@ -50,7 +50,6 @@ void DataStreamServer::getOD()
         printf("Got OD resp %lu\n", zmq_msg_size(&od_data));
         std::string js_str = (char *)zmq_msg_data(&od_data);
         zmq_msg_close(&od_data);
-
         auto j3 = json::parse(js_str);
         auto map = j3["m_mapByName"];
         printf("GotMap\n");
@@ -81,7 +80,7 @@ bool DataStreamServer::start()
         if (ok) {
             QString ip = QInputDialog::getText(nullptr, tr(""),
                                                tr("On which IP server is located:"), QLineEdit::Normal,
-                                               "192.168.1.4", &ok);
+                                               "10.44.82.2", &ok);
             if (ok) {
                 _server_ip = std::string(ip.toUtf8().constData());
                 std::string endpoint = "tcp://" + _server_ip + ":" + std::to_string(_port);
@@ -186,147 +185,3 @@ void DataStreamServer::shutdown()
         _running = false;
     }
 }
-
-#if 0
-DataStreamServer::DataStreamServer() :
-	_running(false)
-{
-    _mqHandle = new pff::mq::MqHandle("Control", "*", 6000);
-}
-
-DataStreamServer::~DataStreamServer()
-{
-	shutdown();
-}
-
-bool DataStreamServer::start()
-{
-    using namespace std::placeholders;
-
-	if (!_running) {
-		bool ok;
-		_port = QInputDialog::getInt(nullptr, tr(""),
-			tr("On wich port should the server listen to:"), 5000, 1111, 65535, 1, &ok);
-		if (ok)
-		{
-			qDebug() << "ZMQ listening on port" << _port;
-
-            _mqHandle->addMasterConfig("motor_master", "192.168.1.4", _port);
-            std::string motorStr("Left");
-            new pff::mq::Subscriber<pff::msgs::MotorState>(*_mqHandle, motorStr+"_MotorState", "motor_master", std::bind(&DataStreamServer::MotorStateCallback, this, _1));
-
-			_running = true;
-		}
-		else {
-			qDebug() << "Couldn't open websocket on port " << _port;
-			_running = false;
-		}
-	}
-	else {
-		qDebug() << "Server already running on port " << _port;
-		QMessageBox::information(nullptr,"Info",QString("Server already running on port: %1").arg(_port));		
-	}
-	return _running;
-}
-
-void DataStreamServer::shutdown()
-{
-	if (_running) {
-		_running = false;
-	}
-}
-
-void DataStreamServer::onNewConnection()
-{
-	qDebug() << "DataStreamServer: onNewConnection";
-}
-
-
-void DataStreamServer::MotorStateCallback(const pff::msgs::MotorState &msg)
-{
-
-    /*
-    uint32_t shaftEncoder;
-    float    shaftVelocity;
-    float    estimatedShaftVelocity;
-    uint32_t actuatorEncoder;
-    float    actuatorVelocity;
-    float    actuatorPosition;
-    float    actuatorOdometry;
-    float    current;
-    float    estimatedCurrent;
-    float    commandedCurrent;
-    float    temperature;
-    float    estimatedDisturbance;
-    uint32_t shaftEncoderErrorCount;
-    uint32_t positionEncoderErrorCount;
-    uint8_t  commutationPhase;
-    */
-
-    std::lock_guard<std::mutex> lock( mutex() );
-
-    auto& numeric_plots = dataMap().numeric;
-
-    const std::string name_str = "leftMotorState.";
-    {
-        auto plotIt = numeric_plots.find(name_str + "shaft_encoder");
-
-        if (plotIt == numeric_plots.end()) {
-            dataMap().addNumeric(name_str + "shaft_encoder");
-        } else {
-            plotIt->second.pushBack({msg.header.timestamp, msg.shaftEncoder});
-        }
-    }
-    {
-        auto plotIt = numeric_plots.find(name_str + "shaft_velocity");
-
-        if (plotIt == numeric_plots.end()) {
-            dataMap().addNumeric(name_str + "shaft_velocity");
-        } else {
-            plotIt->second.pushBack({msg.header.timestamp, msg.shaftVelocity});
-        }
-    }
-    /*
-    printf("Shaft encoder\t%d\n", msg.shaftEncoder);
-    printf("Shaft velocity\t%f\n", msg.shaftVelocity);
-    printf("Estimated shaft velocity\t%f\n", msg.estimatedShaftVelocity);
-    printf("Actuator encoder\t%d\n", msg.actuatorEncoder);
-    printf("Actuator velocity\t%f\n", msg.actuatorVelocity);
-    printf("Actuator position\t%f\n", msg.actuatorPosition);
-    printf("Actuator odometry\t%f\n", msg.actuatorOdometry);
-    printf("Currrent\t%f\n", msg.current);
-    printf("Estimated current\t%f\n", msg.estimatedCurrent);
-    printf("Commanded current\t%f\n", msg.commandedCurrent);
-    printf("Temperature\t%f\n", msg.temperature);
-    printf("Commutation phase\t%d\n", msg.commutationPhase);
-    printf("\n");
-    */
-}
-
-void DataStreamServer::processMessage(QString message)
-{
-    std::lock_guard<std::mutex> lock( mutex() );
-
-	//qDebug() << "DataStreamServer: processMessage: "<< message;
-	QStringList lst = message.split(':');
-	if (lst.size() == 3) {
-		QString key = lst.at(0);
-		double time = lst.at(1).toDouble();
-		double value = lst.at(2).toDouble();
-
-        auto& numeric_plots = dataMap().numeric;
-
-		const std::string name_str = key.toStdString();
-        auto plotIt = numeric_plots.find(name_str);
-		
-        if (plotIt == numeric_plots.end())
-        {
-            dataMap().addNumeric(name_str);
-		}
-        else{
-            plotIt->second.pushBack( {time, value} );
-        }
-	}	
-}
-#endif
-
