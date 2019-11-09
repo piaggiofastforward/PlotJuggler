@@ -59,9 +59,6 @@ private:
 
 private slots:
 
-    void onNewConnection();
-
-    void processMessage(QString message);
 
     void Listener();
 
