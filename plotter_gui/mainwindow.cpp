@@ -798,7 +798,7 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
     return true;
 }
 
-void MainWindow::onActionSave_as_matlab()
+void MainWindow::on_actionSave_as_matlab_triggered()
 {
     QFileDialog saveDialog;
     saveDialog.setOption(QFileDialog::DontUseNativeDialog, true);
@@ -885,22 +885,6 @@ void MainWindow::onActionSave_as_matlab()
     }
     TinyMATWriter_close(matFile);
 }
-
-void MainWindow::onActionSaveLayout()
-{
-    QDomDocument doc = xmlSaveState();
-
-    //--------------------------
-    savePluginState(doc);
-    //--------------------------
-
-    QSettings settings;
-
-    QString directory_path  = settings.value("MainWindow.lastLayoutDirectory",
-                                             QDir::currentPath() ).toString();
-
-    QFileDialog saveDialog;
-    saveDialog.setOption(QFileDialog::DontUseNativeDialog, true);
 
 void MainWindow::onDeleteMultipleCurves(const std::vector<std::string> &curve_names)
 {
@@ -1623,7 +1607,7 @@ bool MainWindow::loadLayoutFromFile(QString filename)
     if( !previousl_streamer.isNull() )
     {
         QString streamer_name = previousl_streamer.attribute("name");
-        QString streamer_autostart = previously_loaded_streamer.attribute("autostart");
+        QString streamer_autostart = previousl_streamer.attribute("autostart");
 
         QMessageBox msgBox(this);
         msgBox.setWindowTitle("Start Streaming?");
@@ -1638,7 +1622,7 @@ bool MainWindow::loadLayoutFromFile(QString filename)
         {
             msgBox.exec();
         }
-        if( msgBox.clickedButton() == buttonBoth || streamer_autostart.isNull() == false )
+        if( msgBox.clickedButton() == yes || streamer_autostart.isNull() == false )
         {
             if( _data_streamer.count(streamer_name) != 0 )
             {

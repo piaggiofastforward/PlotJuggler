@@ -41,7 +41,7 @@ class CurveTreeView : public QTreeWidget, public CurvesView
         _hidden_count = 0;
     }
 
-    void addItem(const QString& item_name);
+    void addItem(const QString& item_name) override;
 
     void refreshColumns() override;
 

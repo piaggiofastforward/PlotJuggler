@@ -1,5 +1,6 @@
 #include "curvelist_panel.h"
 #include "ui_curvelist_panel.h"
+#include "curvelist_view.h"
 #include "PlotJuggler/alphanum.hpp"
 #include <QDebug>
 #include <QLayoutItem>
@@ -18,6 +19,7 @@
 #include <QItemSelectionModel>
 #include <QScrollBar>
 #include <QTreeWidget>
+#include <array>
 
 //-------------------------------------------------
 

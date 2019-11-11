@@ -69,7 +69,7 @@ void DataStreamServer::getOD()
 
 }
 
-bool DataStreamServer::start()
+bool DataStreamServer::start(QStringList*)
 {
     using namespace std::placeholders;
 

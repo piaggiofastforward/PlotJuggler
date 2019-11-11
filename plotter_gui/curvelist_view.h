@@ -91,7 +91,7 @@ class CurveTableView : public QTableWidget, public CurvesView
         _inserted_curves.clear();
     }
 
-    void addItem(const QString& item_name);
+    void addItem(const QString& item_name) override;
 
     void refreshColumns() override;
 
@@ -117,7 +117,7 @@ class CurveTableView : public QTableWidget, public CurvesView
 
     void setViewResizeEnabled(bool enable) override;
 
-    virtual std::pair<int,int> hiddenItemsCount()
+    virtual std::pair<int,int> hiddenItemsCount() override
     {
         return { _hidden_count, model()->rowCount() };
     }
