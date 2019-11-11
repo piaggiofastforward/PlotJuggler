@@ -33,6 +33,7 @@ public:
     void addTab(PlotMatrix *tab = nullptr);
 
     QDomElement xmlSaveState(QDomDocument &doc) const;
+
     bool xmlLoadState(QDomElement &tabbed_area);
 
     ~TabbedPlotWidget() override;
@@ -50,6 +51,8 @@ public slots:
     void setStreamingMode(bool streaming_mode);
 
     static void saveTabImage(QString fileName, PlotMatrix* matrix);
+
+    void on_stylesheetChanged(QString style_dir);
 
 private slots:
 
@@ -85,6 +88,8 @@ private slots:
 
     void on_pushButtonZoomMax_pressed();
 
+    void onMoveWidgetIntoNewTab(QString plot_name);
+
 private:
 
     enum LabelStatus{ LEFT, RIGHT, HIDDEN };
@@ -98,6 +103,8 @@ private:
 
     const QString _name;
 
+    QMainWindow *_main_window;
+
     PlotDataMapRef& _mapped_data;
 
     bool _horizontal_link;
@@ -107,6 +114,8 @@ private:
     LabelStatus _labels_status;
 
     virtual void closeEvent(QCloseEvent *event) override;
+
+    void printPlotsNames();
 
 protected:
 

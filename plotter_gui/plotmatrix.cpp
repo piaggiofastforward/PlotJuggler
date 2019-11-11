@@ -125,7 +125,6 @@ void PlotMatrix::removeColumn(unsigned column_to_delete)
     }
 
     updateLayout();
-
 }
 
 void PlotMatrix::removeRow(unsigned row_to_delete)
@@ -152,6 +151,29 @@ void PlotMatrix::removeRow(unsigned row_to_delete)
     }
 
     updateLayout();
+}
+
+void PlotMatrix::removeEmpty()
+{
+    for( unsigned row = 0; row< rowsCount(); row++)
+    {
+        while( rowsCount() > 1 &&
+               isRowEmpty( row ) &&
+               row < rowsCount() )
+        {
+            removeRow( row );
+        }
+    }
+
+    for( unsigned col = 0; col< colsCount(); col++)
+    {
+        while( colsCount() > 1 &&
+               isColumnEmpty( col ) &&
+               col < colsCount() )
+        {
+            removeColumn( col );
+        }
+    }
 }
 
 
@@ -204,6 +226,7 @@ PlotWidget* PlotMatrix::plotAt( unsigned row, unsigned column )
         PlotWidget* plot = static_cast<PlotWidget*>( item->widget() );
         return plot;
     }
+    qDebug() << "Critical error in PlotMatrix::plotAt. Report the bug";
     return NULL;
 }
 
@@ -214,6 +237,7 @@ const PlotWidget* PlotMatrix::plotAt( unsigned row, unsigned column ) const
         PlotWidget* plot = static_cast<PlotWidget*>( item->widget() );
         return plot;
     }
+    qDebug() << "Critical error in PlotMatrix::plotAt. Report the bug";
     return NULL;
 }
 

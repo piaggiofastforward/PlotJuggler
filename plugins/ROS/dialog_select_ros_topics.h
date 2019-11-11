@@ -20,23 +20,22 @@ class DialogSelectRosTopics : public QDialog
 
 public:
 
+    struct Configuration
+    {
+        QStringList selected_topics;
+        size_t max_array_size;
+        bool use_header_stamp;
+        bool use_renaming_rules;
+        bool discard_large_arrays;
+    };
+
     explicit DialogSelectRosTopics(const std::vector<std::pair<QString,QString>>& topic_list,
-                                   QStringList default_selected_topics,
+                                   const Configuration& default_info,
                                    QWidget *parent = nullptr);
 
     ~DialogSelectRosTopics() override;
 
-    QStringList getSelectedItems();
-
-    int maxArraySize() const;
-
-    const QCheckBox *checkBoxUseRenamingRules();
-
-    bool discardEntireArrayIfTooLarge();
-
-    QCheckBox * checkBoxTimestamp();
-
-    QString prefix();
+    Configuration getResult() const;
 
 public slots:
 
@@ -52,8 +51,6 @@ private slots:
 
     void on_pushButtonEditRules_pressed();
 
-    void on_checkBoxPrefix_toggled(bool checked);
-
     void on_maximumSizeHelp_pressed();
 
     void on_lineEditFilter_textChanged(const QString &search_string);
@@ -61,8 +58,6 @@ private slots:
     void on_spinBoxArraySize_valueChanged(int value);
 
 private:
-
-    void closeEvent(QCloseEvent *event) override;
 
     QStringList _topic_list;
     QStringList _default_selected_topics;
@@ -74,37 +69,8 @@ private:
 
 };
 
-// SOME SFINAE magic....
-
-template <typename T>
-class has_setMaxArrayPolicy
-{
-    typedef char one;
-    typedef long two;
-
-    template <typename C> static one test( decltype(&C::setMaxArrayPolicy) ) ;
-    template <typename C> static two test(...);
-
-public:
-    enum { value = sizeof(test<T>(nullptr)) == sizeof(char) };
-};
-
-
 nonstd::optional<double>FlatContainerContainHeaderStamp(const RosIntrospection::FlatMessage& flat_msg);
 
-
-template<class T, typename std::enable_if< has_setMaxArrayPolicy<T>::value, int>::type = 0>
-inline bool setMaxArrayPolicy(T* parser, bool policy)
-{
-    parser->setMaxArrayPolicy( policy );
-    return true;
-}
-
-template<class T, typename std::enable_if< !has_setMaxArrayPolicy<T>::value, int>::type = 0>
-inline bool setMaxArrayPolicy(T* , bool )
-{
-    return false;
-}
 
 
 #endif // DIALOG_SELECT_ROS_TOPICS_H

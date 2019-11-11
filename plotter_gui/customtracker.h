@@ -1,8 +1,8 @@
 #ifndef CUSTOMTRACKER_H
 #define CUSTOMTRACKER_H
 
-
 #include <QEvent>
+#include <QPointF>
 #include "qwt_plot_picker.h"
 #include "qwt_picker_machine.h"
 #include "qwt_plot_marker.h"
@@ -32,10 +32,18 @@ public slots:
 
     void setEnabled(bool enable);
 
+    bool isEnabled() const;
+
+    void redraw()
+    {
+        setPosition(_prev_trackerpoint);
+    }
+
 private:
     QLineF  curveLineAt( const QwtPlotCurve *, double x ) const;
 
     QPointF transform( QPoint);
+
     QPoint  invTransform( QPointF);
 
     QPointF _prev_trackerpoint;
