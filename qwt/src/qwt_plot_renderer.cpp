@@ -1,4 +1,4 @@
-/* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
+  /* -*- mode: C++ ; c-file-style: "stroustrup" -*- *****************************
  * Qwt Widget Library
  * Copyright (C) 1997   Josef Wilgen
  * Copyright (C) 2002   Uwe Rathmann
@@ -26,6 +26,7 @@
 #include <qfileinfo.h>
 #include <qimagewriter.h>
 #include <qvariant.h>
+#include <qpainterpath.h>
 
 #ifndef QWT_NO_SVG
 #ifdef QT_SVG_LIB

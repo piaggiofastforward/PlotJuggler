@@ -26,6 +26,7 @@
 #include <QPainter>
 #include <QLineF>
 #include <QDragEnterEvent>
+#include <QPainterPath>
 #include <QMimeData>
 #include "color_utils.hpp"
 

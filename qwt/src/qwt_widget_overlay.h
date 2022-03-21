@@ -12,6 +12,7 @@
 
 #include "qwt_global.h"
 #include <qwidget.h>
+#include <qpainterpath.h>
 
 class QPainter;
 class QRegion;

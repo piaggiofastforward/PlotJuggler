@@ -17,6 +17,7 @@
 #include <qstyle.h>
 #include <qstyleoption.h>
 #include <qpainter.h>
+#include <qpainterpath.H>
 
 static QBitmap qwtBorderMask( const QWidget *canvas, const QSize &size )
 {
