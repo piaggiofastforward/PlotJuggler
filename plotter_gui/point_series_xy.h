@@ -6,7 +6,7 @@
 class PointSeriesXY: public DataSeriesBase
 {
 public:
-    PointSeriesXY(const PlotData* y_axis, const PlotData* x_axis);
+    PointSeriesXY(const PlotData* x_axis, const PlotData* y_axis);
 
     virtual QPointF sample( size_t i ) const override
     {
@@ -26,6 +26,9 @@ public:
     PlotData::RangeValueOpt getVisualizationRangeY(PlotData::RangeTime range_X) override;
 
     bool updateCache() override;
+
+    const PlotData* dataX() const { return _x_axis; }
+    const PlotData* dataY() const { return _y_axis; }
 
 protected:
 

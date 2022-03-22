@@ -1,6 +1,7 @@
 #include "statepublisher_rostopic.h"
 #include "PlotJuggler/any.hpp"
 #include "../qnodedialog.h"
+
 #include "ros_type_introspection/ros_introspection.hpp"
 #include <QDialog>
 #include <QFormLayout>
@@ -20,7 +21,7 @@
 #include <QMessageBox>
 
 TopicPublisherROS::TopicPublisherROS():
-    enabled_(false ),
+    _enabled(false ),
     _node(nullptr),
     _publish_clock(true)
 {
@@ -31,13 +32,14 @@ TopicPublisherROS::TopicPublisherROS():
 
 TopicPublisherROS::~TopicPublisherROS()
 {
-    enabled_ = false;
+    _enabled = false;
 }
 
-void TopicPublisherROS::setParentMenu(QMenu *menu)
+void TopicPublisherROS::setParentMenu(QMenu *menu, QAction* action)
 {
+    StatePublisher::setParentMenu( menu, action );
+
     _enable_self_action = menu->actions().back();
-    _menu = menu;
 
     _select_topics_to_publish = new QAction(QString("Select topics to be published"), _menu);
     _menu->addAction( _select_topics_to_publish );
@@ -51,24 +53,39 @@ void TopicPublisherROS::setEnabled(bool to_enable)
     {
         _node = RosManager::getNode();
     }
-    enabled_ = (to_enable && _node);
+    _enabled = (to_enable && _node);
 
-    if(enabled_)
+    if(_enabled)
     {
-        filterDialog();
-        if( !_tf_publisher)
+        filterDialog(true);
+        if( !_tf_publisher )
         {
             _tf_publisher = std::unique_ptr<tf::TransformBroadcaster>( new tf::TransformBroadcaster );
         }
         _previous_play_index = std::numeric_limits<int>::max();
+
+        if( _publish_clock )
+        {
+            _clock_publisher = _node->advertise<rosgraph_msgs::Clock>( "/clock", 10, true);
+        }
+        else{
+            _clock_publisher.shutdown();
+        }
+
+        _tf_static_pub = _node->advertise<tf::tfMessage>( "/tf_static", 10, true);
     }
     else{
         _node.reset();
         _publishers.clear();
+        _clock_publisher.shutdown();
+        _tf_static_pub.shutdown();
     }
+
+
+    StatePublisher::setEnabled(_enabled);
 }
 
-void TopicPublisherROS::filterDialog(bool)
+void TopicPublisherROS::filterDialog(bool autoconfirm)
 {   
     auto all_topics = RosIntrospectionFactory::get().getTopicList();
 
@@ -142,9 +159,13 @@ void TopicPublisherROS::filterDialog(bool)
     connect(buttons, SIGNAL(rejected()), dialog, SLOT(reject()));
 
     dialog->setLayout(vertical_layout);
-    auto result = dialog->exec();
 
-    if(result == QDialog::Accepted)
+    if( !autoconfirm )
+    {
+        auto result = dialog->exec();
+    }
+
+    if(autoconfirm || dialog->result() == QDialog::Accepted)
     {
         _topics_to_publish.clear();
         for(const auto& it: checkbox )
@@ -167,12 +188,12 @@ void TopicPublisherROS::filterDialog(bool)
 
         _publish_clock = publish_sim_time->isChecked();
 
-        if( _publish_clock )
+        if(_enabled && _publish_clock )
         {
-            _clock_publisher = _node->advertise<rosgraph_msgs::Clock>( "/clock", 10, true);
+          _clock_publisher = _node->advertise<rosgraph_msgs::Clock>( "/clock", 10, true);
         }
         else{
-            _clock_publisher.shutdown();
+          _clock_publisher.shutdown();
         }
 
         QSettings settings;
@@ -182,7 +203,9 @@ void TopicPublisherROS::filterDialog(bool)
 
 void TopicPublisherROS::broadcastTF(double current_time)
 {
-    std::unordered_map<std::string, geometry_msgs::TransformStamped> transforms;
+    using StringPair = std::pair<std::string,std::string>;
+
+    std::map<StringPair, geometry_msgs::TransformStamped> transforms;
 
     for(const auto& data_it:  _datamap->user_defined )
     {
@@ -193,10 +216,8 @@ void TopicPublisherROS::broadcastTF(double current_time)
         {
             continue;// Not selected
         }
-        const RosIntrospection::ShapeShifter* shapeshifter =
-                RosIntrospectionFactory::get().getShapeShifter( topic_name );
-        if( shapeshifter->getDataType() != "tf/tfMessage" &&
-            shapeshifter->getDataType() != "tf2_msgs/TFMessage"   )
+
+        if( topic_name != "/tf_static" && topic_name != "/tf")
         {
             continue;
         }
@@ -209,7 +230,7 @@ void TopicPublisherROS::broadcastTF(double current_time)
          }
 
          std::vector<uint8_t> raw_buffer;
-         // 1 second in the past (to be configurable in the future
+         // 2 seconds in the past (to be configurable in the future)
          int initial_index = tf_data->getIndexFromX( current_time - 2.0 );
 
          if( _previous_play_index < last_index &&
@@ -224,31 +245,41 @@ void TopicPublisherROS::broadcastTF(double current_time)
 
              const bool isRosbagMessage = any_value.type() == typeid(rosbag::MessageInstance);
 
-             if( isRosbagMessage )
+             if( !isRosbagMessage )
              {
-                 const auto& msg_instance = nonstd::any_cast<rosbag::MessageInstance>( any_value );
+               continue;
+             }
 
-                 raw_buffer.resize( msg_instance.size() );
-                 ros::serialization::OStream ostream(raw_buffer.data(), raw_buffer.size());
-                 msg_instance.write(ostream);
+             const auto& msg_instance = nonstd::any_cast<rosbag::MessageInstance>( any_value );
 
-                 tf::tfMessage tf_msg;
-                 ros::serialization::IStream istream( raw_buffer.data(), raw_buffer.size() );
-                 ros::serialization::deserialize(istream, tf_msg);
+             raw_buffer.resize( msg_instance.size() );
+             ros::serialization::OStream ostream(raw_buffer.data(), raw_buffer.size());
+             msg_instance.write(ostream);
 
-                 for(const auto& stamped_transform: tf_msg.transforms)
-                 {
-                     const auto& child_id = stamped_transform.child_frame_id;
-                     auto it = transforms.find(child_id);
-                     if( it == transforms.end())
-                     {
-                         transforms.insert( {stamped_transform.child_frame_id, stamped_transform} );
-                     }
-                     else if( it->second.header.stamp <= stamped_transform.header.stamp)
-                     {
-                         it->second = stamped_transform;
-                     }
-                 }
+             tf::tfMessage tf_msg;
+             ros::serialization::IStream istream( raw_buffer.data(), raw_buffer.size() );
+             ros::serialization::deserialize(istream, tf_msg);
+
+             if( topic_name == "/tf_static" )
+             {
+               _tf_static_pub.publish(tf_msg);
+               continue;
+             }
+
+             for(const auto& stamped_transform: tf_msg.transforms)
+             {
+               const auto& parent_id = stamped_transform.header.frame_id;
+               const auto& child_id = stamped_transform.child_frame_id;
+               StringPair trans_id = std::make_pair(parent_id, child_id);
+               auto it = transforms.find(trans_id);
+               if( it == transforms.end())
+               {
+                 transforms.insert( {trans_id, stamped_transform} );
+               }
+               else if( it->second.header.stamp <= stamped_transform.header.stamp)
+               {
+                 it->second = stamped_transform;
+               }
              }
          }
     }
@@ -284,6 +315,8 @@ bool TopicPublisherROS::toPublish(const std::string &topic_name)
 
 void TopicPublisherROS::publishAnyMsg(const rosbag::MessageInstance& msg_instance)
 {
+    using namespace RosIntrospection;
+
     const auto& topic_name = msg_instance.getTopic();
     RosIntrospection::ShapeShifter* shapeshifted =
             RosIntrospectionFactory::get().getShapeShifter( topic_name );
@@ -300,24 +333,19 @@ void TopicPublisherROS::publishAnyMsg(const rosbag::MessageInstance& msg_instanc
 
     if( !_publish_clock )
     {
-        const RosIntrospection::Parser::VisitingCallback modifyTimestamp =
-                [](const RosIntrospection::ROSType&, absl::Span<uint8_t>& buffer)
+        const ROSMessageInfo* msg_info = RosIntrospectionFactory::parser().getMessageInfo( topic_name );
+        if(msg_info &&  msg_info->message_tree.croot()->children().size() >= 1)
         {
-            std_msgs::Header msg;
-            ros::serialization::IStream is( buffer.data(), buffer.size() );
-            ros::serialization::deserialize(is, msg);
-            msg.stamp = ros::Time::now();
-            ros::serialization::OStream os( buffer.data(), buffer.size() );
-            ros::serialization::serialize(os, msg);
-        };
-
-        auto msg_info = RosIntrospectionFactory::parser().getMessageInfo( topic_name );
-        if(msg_info)
-        {
-            const RosIntrospection::ROSType header_type( ros::message_traits::DataType<std_msgs::Header>::value() ) ;
-            absl::Span<uint8_t> buffer_span(raw_buffer);
-            RosIntrospectionFactory::parser().applyVisitorToBuffer(topic_name, header_type,
-                                                                   buffer_span,  modifyTimestamp );
+            const auto& first_field = msg_info->message_tree.croot()->child(0)->value();
+            if(first_field->type().baseName() == "std_msgs/Header")
+            {
+                std_msgs::Header msg;
+                ros::serialization::IStream is( raw_buffer.data(), raw_buffer.size() );
+                ros::serialization::deserialize(is, msg);
+                msg.stamp = ros::Time::now();
+                ros::serialization::OStream os( raw_buffer.data(), raw_buffer.size() );
+                ros::serialization::serialize(os, msg);
+            }
         }
     }
 
@@ -340,7 +368,7 @@ void TopicPublisherROS::publishAnyMsg(const rosbag::MessageInstance& msg_instanc
 
 void TopicPublisherROS::updateState(double current_time)
 {
-    if(!enabled_ || !_node) return;
+    if(!_enabled || !_node) return;
 
     if( !ros::master::check() )
     {
@@ -414,7 +442,7 @@ void TopicPublisherROS::updateState(double current_time)
 
 void TopicPublisherROS::play(double current_time)
 {
-    if(!enabled_ || !_node) return;
+    if(!_enabled || !_node) return;
 
     if( !ros::master::check() )
     {

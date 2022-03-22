@@ -23,27 +23,29 @@ public:
 
     virtual void updateState(double current_time) override;
 
-    virtual const char* name() const override { return "TopicPublisherROS"; }
+    virtual const char* name() const override { return "ROS Topic Re-Publisher"; }
 
-    virtual bool enabled() const override { return enabled_; }
+    virtual bool enabled() const override { return _enabled; }
 
-    void setParentMenu(QMenu *menu) override;
+    void setParentMenu(QMenu *menu, QAction *action) override;
 
     virtual void play(double interval)  override;
 
 public slots:
     virtual void setEnabled(bool enabled) override;
-    void filterDialog(bool toggled = true);
+
+    void filterDialog(bool autoconfirm);
 
 private:
 
     void broadcastTF(double current_time);
 
     std::map<std::string, ros::Publisher> _publishers;
-    bool enabled_;
+    bool _enabled;
     ros::NodeHandlePtr _node;
     bool _publish_clock;
     std::unique_ptr<tf::TransformBroadcaster> _tf_publisher;
+    ros::Publisher _tf_static_pub;
     ros::Publisher _clock_publisher;
 
     QAction* _enable_self_action;
