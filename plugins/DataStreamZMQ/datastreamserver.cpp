@@ -14,6 +14,7 @@
 #include <functional>
 #include <chrono>
 #include <iostream>
+#include <QFormLayout>
 
 DataStreamServer::DataStreamServer() :
         _running(false)
@@ -78,9 +79,13 @@ bool DataStreamServer::start(QStringList*)
         _port = QInputDialog::getInt(nullptr, tr(""),
                                      tr("On which port should the server listen to:"), 3322, 100, 65535, 1, &ok);
         if (ok) {
-            QString ip = QInputDialog::getText(nullptr, tr(""),
-                                               tr("On which IP server is located:"), QLineEdit::Normal,
-                                               "10.44.82.2", &ok);
+
+            QStringList items;
+            items << QString("10.44.83.1");
+            items << QString("127.0.0.1");
+            //items << QString("Choice 3");
+            QString ip = QInputDialog::getItem(nullptr, tr("Server IP"), tr("Select server IP"), items, 0,
+                                  true, &ok);
             if (ok) {
                 _server_ip = std::string(ip.toUtf8().constData());
                 std::string endpoint = "tcp://" + _server_ip + ":" + std::to_string(_port);
