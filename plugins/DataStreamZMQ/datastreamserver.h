@@ -8,8 +8,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #ifndef DATASTREAMSERVER_H
 #define DATASTREAMSERVER_H
 
-#include <QWebSocketServer>
-#include <QWebSocket>
 #include <QList>
 
 #include <QtPlugin>
