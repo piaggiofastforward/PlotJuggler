@@ -63,6 +63,8 @@ Do not forget to make it executable with the command
 Clone the repository as usual:
 
       git clone https://github.com/facontidavide/PlotJuggler.git
+      git submodule init
+      git submodule update
 
 The only binary dependency that you need installed in your system is Qt5. 
 On Ubuntu the debians can be installed with the command:
