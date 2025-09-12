@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <cstdint>
 
 #include "string_view.hpp"
 

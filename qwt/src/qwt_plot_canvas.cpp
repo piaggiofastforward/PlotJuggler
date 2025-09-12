@@ -18,6 +18,7 @@
 #include <qstyleoption.h>
 #include <qpaintengine.h>
 #include <qevent.h>
+#include <QPainterPath>
 
 namespace
 {

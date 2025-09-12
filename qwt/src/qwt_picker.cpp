@@ -18,6 +18,7 @@
 #include <qpainter.h>
 #include <qcursor.h>
 #include <qpointer.h>
+#include <QPainterPath>
 
 static inline QRegion qwtMaskRegion( const QRect &r, int penWidth )
 {
